@@ -45,3 +45,13 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+
+*.swp
+*.swo
+*.swn
+node_modules
+bower_components
+npm-debug.log
+tmp
+dist
