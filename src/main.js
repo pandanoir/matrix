@@ -79,31 +79,35 @@ class Matrix {
     inverse() {
         if (!this.isSquare()) return null;
         const _matrix = this.flatten().matrix.map(x => x.concat());
-        const I = new IdentityMatrix(_matrix.length);
+        const I = new IdentityMatrix(_matrix.length).matrix;
         // Gaussian elimination
-        for (let k = 0, _k = _matrix.length, found_nonzero_line; k < _k; k++) {
-            found_nonzero_line = false;
+        for (let k = 0, _k = _matrix.length; k < _k; k++) {
+            let next_i = -1;
             for (let i = k, _i = _matrix.length; i < _i; i++) {
                 if (_matrix[i][k] === 0) {
                     continue;
                 }
-                const m = _matrix[i][0];
-                I.matrix[i] = I.matrix[i].map(x => x / m);
-                _matrix[i] = _matrix[i].map(x => x / m);
-                for (let j = 0; j < _i; j++) {
-                    if (j === i) continue;
-                    const m = -_matrix[j][0];
-                    I.matrix[j] = I.matrix[j].map(x => x + I.matrix[i].map(x => x * m));
-                    _matrix[j] = _matrix[j].map(x => x + _matrix[i].map(x => x * m));
+                if (_matrix[i][k] === 1 || _matrix[i][k] === -1) {
+                    next_i = i;
+                    break;
                 }
-                [_matrix[i], _matrix[k]] = [_matrix[k], _matrix[i]]; // swap line `i` and line `k`
-                [I.matrix[i], I.matrix[k]] = [I.matrix[k], I.matrix[i]]; // swap line `i` and line `k`
-                found_nonzero_line = true;
-                break;
+                next_i = i;
             }
-            if (found_nonzero_line === false) return null;
+            if (next_i === -1) return null;
+            const i = next_i;
+            const m = _matrix[i][k];
+            I[i] = I[i].map(x => x / m);
+            _matrix[i] = _matrix[i].map(x => x / m);
+            for (let j = 0; j < _matrix.length; j++) {
+                if (j === i) continue;
+                const m = -_matrix[j][k];
+                I[j] = I[j].map((x, index) => x + I[i][index] * m);
+                _matrix[j] = _matrix[j].map((x, index) => x + _matrix[i][index] * m);
+            }
+            [_matrix[i], _matrix[k]] = [_matrix[k], _matrix[i]]; // swap line `i` and line `k`
+            [I[i], I[k]] = [I[k], I[i]]; // swap line `i` and line `k`
         }
-        return new Matrix(I.matrix);
+        return new Matrix(I);
     }
     add(matrix) {
         if (!this.isSameSize(matrix)) throw new Error('given matrix and this matrix are not same size.');
