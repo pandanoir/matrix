@@ -270,3 +270,8 @@ class IdentityMatrix extends Matrix {
         return 1;
     }
 }
+export default {
+    Matrix,
+    ZeroMatrix,
+    IdentityMatrix
+}
