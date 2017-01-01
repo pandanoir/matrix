@@ -197,6 +197,39 @@ class Matrix {
         newMatrix.splice(i, 1);
         return m * new Matrix(newMatrix).getDeterminant();
     }
+    flatten() {
+        const matrix = [];
+        for (let i = 0, rowLen = 0; i < this.row; i++) {
+            if (this.matrix[i] instanceof Matrix) {
+                const flattenMatrix = this.matrix[i].flatten();
+                for (let j = 0; j < flattenMatrix.row; j++) {
+                    matrix[rowLen + j] = flattenMatrix.matrix[j];
+                }
+                rowLen += flattenMatrix.row;
+            } else {
+                let deltaRow = 1;
+                for (let j = 0, columnLen = 0; j < this.column; j++) {
+                    if (this.matrix[i][j] instanceof Matrix) {
+                        const flattenMatrix = this.matrix[i][j].flatten();
+                        flattenMatrix.matrix.forEach((row, i) =>
+                            row.forEach((val, j) => {
+                                if (!matrix[rowLen + i]) matrix[rowLen + i] = [];
+                                matrix[rowLen + i][columnLen + j] = val
+                            })
+                        );
+                        deltaRow = flattenMatrix.row;
+                        columnLen += flattenMatrix.column;
+                    } else {
+                        if (!matrix[rowLen]) matrix[rowLen] = [];
+                        matrix[rowLen][columnLen] = this.matrix[i][j];
+                        columnLen++;
+                    }
+                }
+                rowLen += deltaRow;
+            }
+        }
+        return new Matrix(matrix);
+    }
     toArray() {
         return this.matrix.map(item => {
             if (item instanceof Matrix) return item.toArray();
