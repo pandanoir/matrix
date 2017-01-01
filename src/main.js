@@ -134,7 +134,8 @@ class Matrix {
         return new Matrix(_matrix);
     }
     product(matrix) {
-        if (this.matrix[0].length !== matrix.matrix.length) throw new Error(DIFFERENT_TYPE_PRODUCT);
+        if (this.matrix[0].length !== matrix.matrix.length)
+            throw new Error(DIFFERENT_TYPE_PRODUCT);
         let m = this.matrix[0].length;
         let _matrix = [];
 
@@ -176,7 +177,7 @@ class Matrix {
         return this.matrix.length === this.matrix[0].length;
     }
     toArray() {
-        return this.matrix.map(function(item) {
+        return this.matrix.map(item => {
             if (item instanceof Matrix) return item.toArray();
             return item;
         });
@@ -184,12 +185,11 @@ class Matrix {
 }
 class ZeroMatrix extends Matrix {
     constructor(n, m) {
-        super(Array.apply(null, Array(n)).map(() => (Array(m).fill(0))));
+        super([...Array(n)].map(() => Array(m).fill(0)));
     }
 }
-class IMatrix extends ZeroMatrix {
+class IdentityMatrix extends Matrix {
     constructor(n) {
-        super(n, n);
-        this.matrix = this.matrix.map((row, i) => (row[i] = 1, row));
+        super([...Array(n)].map((row, i) => (row = Array(n).fill(0), row[i] = 1, row)));
     }
 }
