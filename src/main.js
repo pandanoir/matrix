@@ -1,19 +1,74 @@
 'use strict';
-const DIFFERENT_TYPE_PRODUCT = 'can\'t product different type matrix';
-function product(A, B) {
-    if (A instanceof Matrix && B instanceof Matrix) {
-        return A.product(B);
-    } else if (typeof A === 'number' && typeof B === 'number') {
-        return A * B;
-    } else throw new Error(DIFFERENT_TYPE_PRODUCT);
-}
-function add(A, B) {
-    if (A instanceof Matrix && B instanceof Matrix) {
-        return A.add(B);
-    } else if (typeof A === 'number' && typeof B === 'number') {
-        return A + B;
-    } else throw new Error(DIFFERENT_TYPE_PRODUCT);
-}
+import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX} from './errorMessages.js';
+import {add, product} from './utils.js';
+const assertMatrix = matrix => {
+    if (!(Array.isArray(matrix) || matrix instanceof Matrix))
+        throw new Error(INVALID_MATRIX);
+    if (matrix.length === 0)
+        throw new Error(INVALID_MATRIX);
+
+    // all elements are not Matrix.
+    let errorCaused = false;
+    for (let i = 0, _i = matrix.length; i < _i; i++) {
+        if (!Array.isArray(matrix[i])) {
+            if (!(matrix[i] instanceof Matrix))
+                throw new Error(INVALID_MATRIX);
+            errorCaused = true;
+            break;
+        }
+        if (matrix[0].length !== matrix[i].length)
+            throw new Error(INVALID_MATRIX);
+    }
+    if (!errorCaused) return;
+    // all rows are Matrix
+    // new Matrix([row1, row2, row2])
+    errorCaused = false;
+    for (let i = 0, _i = matrix.length; i < _i; i++) {
+        if (matrix[i] instanceof Matrix) {
+            if (matrix[0].column !== matrix[i].column) {
+                errorCaused = true;
+                break;
+            }
+        } else {
+            errorCaused = true;
+            break;
+        }
+    }
+    if (!errorCaused) return;
+    // all columns are Matrix
+    // new Matrix([[col1, col2, col3]]);
+    errorCaused = false;
+    if (matrix.length > 1) errorCaused = true;
+    else {
+        for (let j = 0, _j = matrix[0].length; j < _j; j++) {
+            if (matrix[0][j] instanceof Matrix) {
+                if (matrix[0][0].row !== matrix[0][j].row) {
+                    errorCaused = true;
+                    break;
+                }
+            } else {
+                errorCaused = true;
+                break;
+            }
+        }
+    }
+    if (!errorCaused) return;
+    // all elements are Matrix
+    for (let i = 0, _i = matrix.length; i < _i; i++) {
+        if (matrix[i][0] instanceof Matrix) {
+            for (let j = 0, _j = matrix[i].length; j < _j; j++) {
+                if (!(matrix[i][j] instanceof Matrix))
+                    throw new Error(INVALID_MATRIX);
+            }
+        } else throw new Error(INVALID_MATRIX);
+    }
+    for (let i = 0, _i = matrix.length; i < _i; i++) {
+        for (let j = 0, _j = matrix[i].length; j < _j; j++) {
+            if (matrix[0][j].column !== matrix[i][j].column) throw new Error(INVALID_MATRIX);
+            if (matrix[i][0].row !== matrix[i][j].row) throw new Error(INVALID_MATRIX);
+        }
+    }
+};
 class Matrix {
     constructor(matrix) {
         assertMatrix(matrix);
@@ -143,15 +198,5 @@ class IMatrix extends ZeroMatrix {
     constructor(n) {
         super(n, n);
         this.matrix = this.matrix.map((row, i) => (row[i] = 1, row));
-    }
-}
-console.log(JSON.stringify(new Matrix([[1, 3, 2], [2, 1, 3], [1, 4, 2]]).inverse()));
-console.log(JSON.stringify(new Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).inverse()));
-function assertMatrix(matrix) {
-    if (!Array.isArray(matrix) && !(matrix instanceof Matrix)) throw new Error('invalid matrix');
-    for (let i = 0, _i = matrix.length, before = null; i < _i; i++) {
-        if (!Array.isArray(matrix[i]) && !(matrix[i] instanceof Matrix)) throw new Error('invalid matrix');
-        if (i === 0) before = matrix[i].length;
-        if (matrix[i].length !== before) throw new Error('invalid matrix');
     }
 }
