@@ -234,6 +234,16 @@ class Matrix {
         }
         return new Matrix(matrix);
     }
+    equals(m) {
+        const A = this, B = m;
+        if (A.row !== B.row || A.column !== B.column) return false;
+        for (let i = 0; i < A.row; i++) {
+            for (let j = 0; j < A.column; j++) {
+                if (A.matrix[i][j] !== B.matrix[i][j]) return false;
+            }
+        }
+        return true;
+    }
     toArray() {
         return this.matrix.map(item => {
             if (item instanceof Matrix) return item.toArray();
