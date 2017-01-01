@@ -176,6 +176,27 @@ class Matrix {
     isSquare() {
         return this.matrix.length === this.matrix[0].length;
     }
+    getDeterminant() {
+        if (!this.isSquare()) return null;
+        if (this.row === 1) return this.matrix[0][0];
+        if (this.row === 2) {
+            return this.matrix[0][0] * this.matrix[1][1] - this.matrix[0][1] * this.matrix[1][0];
+        }
+        let i = 0;
+        for (i = 0; i < this.row; i++)
+            if (this.matrix[i][0] !== 0) break;
+        if (i === this.row) return 0;
+        const newMatrix = this.matrix.map(x => x.concat());
+        const m = newMatrix[i][0];
+        newMatrix[i] = newMatrix[i].map(x => x / m);
+        for (let j = 0; j < this.row; j++) {
+            if (i === j) continue;
+            const m = newMatrix[j][0];
+            newMatrix[j] = newMatrix[j].map((x, k) => x - m * newMatrix[i][k]).slice(1);
+        }
+        newMatrix.splice(i, 1);
+        return m * new Matrix(newMatrix).getDeterminant();
+    }
     toArray() {
         return this.matrix.map(item => {
             if (item instanceof Matrix) return item.toArray();
@@ -187,9 +208,18 @@ class ZeroMatrix extends Matrix {
     constructor(n, m) {
         super([...Array(n)].map(() => Array(m).fill(0)));
     }
+    getDeterminant() {
+        return this.row === this.column ? 0 : null;
+    }
 }
 class IdentityMatrix extends Matrix {
     constructor(n) {
         super([...Array(n)].map((row, i) => (row = Array(n).fill(0), row[i] = 1, row)));
+    }
+    inverse() {
+        return this;
+    }
+    getDeterminant() {
+        return 1;
     }
 }
