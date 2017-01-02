@@ -12,17 +12,17 @@ describe('Matrix', () => {
                 new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).inverse();
             }, UNDEFINED_OPERATION);
             assert.ok(new M.Matrix([
-                new M.Matrix([[1, 2, 3]]),
-                new M.Matrix([[2, 3, 4]]),
-                new M.Matrix([[1, 1, 1]])
+                new M.RowVector([1, 2, 3]),
+                new M.RowVector([2, 3, 4]),
+                new M.RowVector([1, 1, 1])
             ]).flatten().equals(new M.Matrix([
                 [1, 2, 3],
                 [2, 3, 4],
                 [1, 1, 1]
             ])));
             assert.ok(new M.Matrix([
-                [new M.Matrix([[1, 2], [2, 3]]), new M.Matrix([[3], [4]])],
-                [new M.Matrix([[1, 1]]), new M.Matrix([[1]])]
+                [new M.Matrix([[1, 2], [2, 3]]), new M.ColumnVector([3, 4])],
+                [new M.RowVector([1, 1]), new M.Matrix([[1]])]
             ]).flatten().equals(new M.Matrix([
                 [1, 2, 3],
                 [2, 3, 4],
@@ -99,6 +99,18 @@ describe('Matrix', () => {
             assert.equal(new M.IdentityMatrix(3).getDeterminant(), 1);
             assert.equal(new M.IdentityMatrix(4).getDeterminant(), 1);
             assert.equal(new M.IdentityMatrix(5).getDeterminant(), 1);
+        });
+    });
+    describe('RowVector', () => {
+        it('constructor', () => {
+            assert.ok(new M.RowVector([1, 2, 3]).equals(new M.Matrix([[1, 2, 3]])));
+            assert.ok(new M.RowVector([2, 3, 4]).equals(new M.Matrix([[2, 3, 4]])));
+            assert.ok(new M.RowVector([1, 1]).equals(new M.Matrix([[1, 1]])));
+        });
+    });
+    describe('ColumnVector', () => {
+        it('constructor', () => {
+            assert.ok(new M.ColumnVector([3, 4]).equals(new M.Matrix([[3], [4]])));
         });
     });
 });

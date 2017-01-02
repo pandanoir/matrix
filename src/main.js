@@ -311,8 +311,20 @@ class IdentityMatrix extends Matrix {
         return 1;
     }
 }
+class RowVector extends Matrix {
+    constructor(xs) {
+        super([xs]);
+    }
+}
+class ColumnVector extends Matrix {
+    constructor(xs) {
+        super(xs.map(x => [x]));
+    }
+}
 export default {
     Matrix,
     ZeroMatrix,
-    IdentityMatrix
+    IdentityMatrix,
+    RowVector,
+    ColumnVector
 }
