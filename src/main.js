@@ -98,7 +98,7 @@ class Matrix {
     add(matrix) {
         if (!this.isSameSize(matrix)) throw new Error('given matrix and this matrix are not same size.');
         const _matrix = [];
-        for (let i = 0, _i = this.matrix.length; i < _i; i++) {
+        for (let i = 0, _i = this.row; i < _i; i++) {
             _matrix.push([]);
             for (let j = 0, _j = this.matrix[i].length; j < _j; j++) {
                 _matrix[i][j] = add(this.matrix[i][j], matrix.matrix[i][j]);
@@ -111,7 +111,7 @@ class Matrix {
     }
     multiple(k) {
         const _matrix = [];
-        for (let i = 0, _i = this.matrix.length; i < _i; i++) {
+        for (let i = 0, _i = this.row; i < _i; i++) {
             _matrix.push([]);
             for (let j = 0, _j = this.matrix[i].length; j < _j; j++) {
                 if (this.matrix[i][j] instanceof Matrix) {
@@ -124,25 +124,22 @@ class Matrix {
         return new Matrix(_matrix);
     }
     product(matrix) {
-        if (this.matrix[0].length !== matrix.matrix.length)
+        const flatten = this.flatten();
+        matrix = matrix.flatten();
+        if (flatten.column !== matrix.row)
             throw new Error(DIFFERENT_TYPE_PRODUCT);
-        const m = this.matrix[0].length;
-        const _matrix = [];
+        const res = [];
 
-        for (let i = 0, n = this.matrix.length; i < n; i++) {
-            _matrix.push([]);
-            for (let j = 0, p = matrix.matrix[0].length; j < p; j++) {
-                if (this.matrix[i][j] instanceof Matrix) {
-                    _matrix[i][j] = new ZeroMatrix(this.matrix[i][j].matrix.length, this.matrix[i][j].matrix[0].length);
-                } else {
-                    _matrix[i][j] = 0;
-                }
-                for (let k = 0; k < m; k++) {
-                    _matrix[i][j] = add(_matrix[i][j], product(this.matrix[i][k], matrix.matrix[k][j]));
+        for (let i = 0; i < flatten.row; i++) {
+            res.push([]);
+            for (let j = 0; j < matrix.column; j++) {
+                res[i][j] = 0;
+                for (let k = 0; k < flatten.column; k++) {
+                    res[i][j] += flatten.matrix[i][k] * matrix.matrix[k][j];
                 }
             }
         }
-        return new Matrix(_matrix);
+        return new Matrix(res);
     }
     pow(n) {
         if (n === 1) return this;
@@ -151,7 +148,7 @@ class Matrix {
     }
     isSameSize(matrix) {
         assertMatrix(matrix);
-        for (let i = 0, _i = this.matrix.length; i < _i; i++) {
+        for (let i = 0, _i = this.row; i < _i; i++) {
             if (this.matrix[i] instanceof Matrix) {
                 if (!this.matrix[i].isSameSize(matrix.matrix[i])) return false;
             } else if (Array.isArray(this.matrix[i])) {
@@ -198,11 +195,12 @@ class Matrix {
     }
     getDeterminant() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
-        if (this.row === 1) return this.matrix[0][0];
-        if (this.row === 2) {
-            return this.matrix[0][0] * this.matrix[1][1] - this.matrix[0][1] * this.matrix[1][0];
+        const flatten = this.flatten();
+        if (flatten.row === 1) return flatten.matrix[0][0];
+        if (flatten.row === 2) {
+            return flatten.matrix[0][0] * flatten.matrix[1][1] - flatten.matrix[0][1] * flatten.matrix[1][0];
         }
-        const res = this.rowReduction(0);
+        const res = flatten.rowReduction(0);
         if (res == null) return 0;
         let i = 0;
         for (; i < res.row; i++) {
@@ -210,7 +208,7 @@ class Matrix {
         }
         [res.matrix[i], res.matrix[0]] = [res.matrix[0], res.matrix[i]];
         const m = res.matrix[0][0];
-        return m * res.matrix.map(row => row.slice(1)).slice(1).getDeterminant();
+        return m * res.matrix.slice(1).map(row => row.slice(1)).getDeterminant();
     }
     flatten() {
         const matrix = [];
@@ -221,27 +219,27 @@ class Matrix {
                     matrix[rowLen + j] = flattenMatrix.matrix[j];
                 }
                 rowLen += flattenMatrix.row;
-            } else {
-                let deltaRow = 1;
-                for (let j = 0, columnLen = 0; j < this.column; j++) {
-                    if (this.matrix[i][j] instanceof Matrix) {
-                        const flattenMatrix = this.matrix[i][j].flatten();
-                        flattenMatrix.matrix.forEach((row, i) =>
-                            row.forEach((val, j) => {
-                                if (!matrix[rowLen + i]) matrix[rowLen + i] = [];
-                                matrix[rowLen + i][columnLen + j] = val
-                            })
-                        );
-                        deltaRow = flattenMatrix.row;
-                        columnLen += flattenMatrix.column;
-                    } else {
-                        if (!matrix[rowLen]) matrix[rowLen] = [];
-                        matrix[rowLen][columnLen] = this.matrix[i][j];
-                        columnLen++;
-                    }
-                }
-                rowLen += deltaRow;
+                continue;
             }
+            let deltaRow = 1;
+            for (let j = 0, columnLen = 0; j < this.column; j++) {
+                if (this.matrix[i][j] instanceof Matrix) {
+                    const flattenMatrix = this.matrix[i][j].flatten();
+                    flattenMatrix.matrix.forEach((row, i) =>
+                        row.forEach((val, j) => {
+                            if (!matrix[rowLen + i]) matrix[rowLen + i] = [];
+                            matrix[rowLen + i][columnLen + j] = val
+                        })
+                    );
+                    deltaRow = flattenMatrix.row;
+                    columnLen += flattenMatrix.column;
+                    continue;
+                }
+                if (!matrix[rowLen]) matrix[rowLen] = [];
+                matrix[rowLen][columnLen] = this.matrix[i][j];
+                columnLen++;
+            }
+            rowLen += deltaRow;
         }
         return new Matrix(matrix);
     }
