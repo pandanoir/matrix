@@ -5,7 +5,9 @@ const UNDEFINED_OPERATION = /undefined operation/;
 describe('Matrix', () => {
     describe('Matrix', () => {
         it('constructor', () => {
-            assert.ok(new M.Matrix([[1, 3, 2], [2, 1, 3], [1, 4, 2]]).inverse().equals(new M.Matrix([[-10, 2, 7], [-1, 0, 1], [7, -1, -5]])));
+            assert.ok(new M.Matrix([[1, 3, 2], [2, 1, 3], [1, 4, 2]]).inverse().equals(
+                new M.Matrix([[-10, 2, 7], [-1, 0, 1], [7, -1, -5]])
+            ));
             assert.throws(() => {
                 new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).inverse();
             }, UNDEFINED_OPERATION);
