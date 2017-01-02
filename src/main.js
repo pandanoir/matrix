@@ -1,5 +1,5 @@
 'use strict';
-import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX} from './errorMessages.js';
+import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX, UNDEFINED_OPERATION} from './errorMessages.js';
 import {add, product} from './utils.js';
 const assertMatrix = matrix => {
     if (!(Array.isArray(matrix) || matrix instanceof Matrix))
@@ -77,9 +77,10 @@ class Matrix {
         this.column = matrix[0].length;
     }
     inverse() {
-        if (!this.isSquare()) return null;
+        if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
         const _matrix = this.flatten().matrix.map(x => x.concat());
         const I = new IdentityMatrix(_matrix.length).matrix;
+        const abs = a => a > 0 ? a : -a;
         // Gaussian elimination
         for (let k = 0, _k = _matrix.length; k < _k; k++) {
             let next_i = -1;
@@ -91,19 +92,22 @@ class Matrix {
                     next_i = i;
                     break;
                 }
-                next_i = i;
+                if (next_i === -1 || Math.min(abs(_matrix[next_i][k] - 1), abs(_matrix[next_i][k] + 1)) > Math.min(abs(_matrix[i][k] - 1), abs(_matrix[i][k] + 1))) next_i = i;
             }
-            if (next_i === -1) return null;
+            if (next_i === -1) throw new Error(UNDEFINED_OPERATION);
+
             const i = next_i;
             const m = _matrix[i][k];
             I[i] = I[i].map(x => x / m);
             _matrix[i] = _matrix[i].map(x => x / m);
+
             for (let j = 0; j < _matrix.length; j++) {
                 if (j === i) continue;
                 const m = -_matrix[j][k];
                 I[j] = I[j].map((x, index) => x + I[i][index] * m);
                 _matrix[j] = _matrix[j].map((x, index) => x + _matrix[i][index] * m);
             }
+
             [_matrix[i], _matrix[k]] = [_matrix[k], _matrix[i]]; // swap line `i` and line `k`
             [I[i], I[k]] = [I[k], I[i]]; // swap line `i` and line `k`
         }
@@ -111,7 +115,7 @@ class Matrix {
     }
     add(matrix) {
         if (!this.isSameSize(matrix)) throw new Error('given matrix and this matrix are not same size.');
-        var _matrix = [];
+        const _matrix = [];
         for (let i = 0, _i = this.matrix.length; i < _i; i++) {
             _matrix.push([]);
             for (let j = 0, _j = this.matrix[i].length; j < _j; j++) {
@@ -124,7 +128,7 @@ class Matrix {
         return this.add(matrix.multiple(-1));
     }
     multiple(k) {
-        var _matrix = [];
+        const _matrix = [];
         for (let i = 0, _i = this.matrix.length; i < _i; i++) {
             _matrix.push([]);
             for (let j = 0, _j = this.matrix[i].length; j < _j; j++) {
@@ -181,7 +185,7 @@ class Matrix {
         return this.matrix.length === this.matrix[0].length;
     }
     getDeterminant() {
-        if (!this.isSquare()) return null;
+        if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
         if (this.row === 1) return this.matrix[0][0];
         if (this.row === 2) {
             return this.matrix[0][0] * this.matrix[1][1] - this.matrix[0][1] * this.matrix[1][0];
@@ -256,7 +260,8 @@ class ZeroMatrix extends Matrix {
         super([...Array(n)].map(() => Array(m).fill(0)));
     }
     getDeterminant() {
-        return this.row === this.column ? 0 : null;
+        if (this.row === this.column) return 0;
+        throw new Error(UNDEFINED_OPERATION);
     }
 }
 class IdentityMatrix extends Matrix {

@@ -1,11 +1,14 @@
 const assert = require('assert');
 const M = require('../dist/matrix.js');
+const UNDEFINED_OPERATION = /undefined operation/;
 
 describe('Matrix', () => {
     describe('Matrix', () => {
         it('constructor', () => {
             assert.ok(new M.Matrix([[1, 3, 2], [2, 1, 3], [1, 4, 2]]).inverse().equals(new M.Matrix([[-10, 2, 7], [-1, 0, 1], [7, -1, -5]])));
-            assert.equal(new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).inverse(), null);
+            assert.throws(() => {
+                new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).inverse();
+            }, UNDEFINED_OPERATION);
             assert.ok(new M.Matrix([
                 new M.Matrix([[1, 2, 3]]),
                 new M.Matrix([[2, 3, 4]]),
@@ -33,9 +36,15 @@ describe('Matrix', () => {
             assert.equal(new M.ZeroMatrix(4, 4).getDeterminant(), 0);
             assert.equal(new M.ZeroMatrix(5, 5).getDeterminant(), 0);
 
-            assert.equal(new M.ZeroMatrix(1, 2).getDeterminant(), null);
-            assert.equal(new M.ZeroMatrix(2, 1).getDeterminant(), null);
-            assert.equal(new M.ZeroMatrix(3, 2).getDeterminant(), null);
+            assert.throws(() => {
+                new M.ZeroMatrix(1, 2).getDeterminant();
+            }, UNDEFINED_OPERATION);
+            assert.throws(() => {
+                new M.ZeroMatrix(2, 1).getDeterminant()
+            }, UNDEFINED_OPERATION);
+            assert.throws(() => {
+                new M.ZeroMatrix(3, 2).getDeterminant();
+            }, UNDEFINED_OPERATION);
         })
     })
     describe('IdentityMatrix', () => {
