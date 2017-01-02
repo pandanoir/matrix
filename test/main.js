@@ -61,8 +61,8 @@ describe('Matrix', () => {
             assert.throws(() => {
                 new M.ZeroMatrix(3, 2).getDeterminant();
             }, UNDEFINED_OPERATION);
-        })
-    })
+        });
+    });
     describe('IdentityMatrix', () => {
         it('.getDeterminant()', () => {
             assert.ok(new M.IdentityMatrix(1).equals(new M.Matrix([[1]])));
@@ -94,6 +94,6 @@ describe('Matrix', () => {
             assert.equal(new M.IdentityMatrix(3).getDeterminant(), 1);
             assert.equal(new M.IdentityMatrix(4).getDeterminant(), 1);
             assert.equal(new M.IdentityMatrix(5).getDeterminant(), 1);
-        })
-    })
+        });
+    });
 });
