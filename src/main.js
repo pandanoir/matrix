@@ -188,6 +188,31 @@ class Matrix {
         }
         return res;
     }
+    getRank() {
+        let matrix = this.flatten();
+        if (matrix.row === 1) return matrix.matrix[0].some(x => x !== 0) ? 1 : 0;
+        while (matrix.row > 0) {
+            let found = false;
+            for (let i = 0; i < matrix.row; i++) {
+                if (matrix.matrix[i][0] !== 0) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                const res = matrix.rowReduction(0);
+                let i = 0;
+                for (; i < res.row; i++) {
+                    if (res.matrix[i] !== 0) break;
+                }
+                [res.matrix[i], res.matrix[0]] = [res.matrix[0], res.matrix[i]];
+                return 1 + new Matrix(res.matrix.slice(1).map(row => row.slice(1))).getRank();
+            } else {
+                matrix = new Matrix(matrix.matrix.slice(1));
+            }
+        }
+        return rank;
+    }
     getDeterminant() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
         if (this.row === 1) return this.matrix[0][0];

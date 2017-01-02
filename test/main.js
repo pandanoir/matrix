@@ -43,6 +43,11 @@ describe('Matrix', () => {
                 new M.Matrix([[1, 2, 3], [4, 5, 6]]).getTrace();
             }, UNDEFINED_OPERATION);
         });
+        it('.getRank()', () => {
+            assert.equal(new M.Matrix([[4, 2, 1], [5, 4, 1], [1, 2, 0]]).getRank(), 2);
+            assert.equal(new M.Matrix([[1, 1, -3], [-1, 0, 5], [0, 3, 6]]).getRank(), 2);
+            assert.equal(new M.Matrix([[2, 3, -4, 1], [1, 2, -3, -1], [-2, -4, 9, 5]]).getRank(), 3);
+        });
     });
     describe('ZeroMatrix', () => {
         it('.getDeterminant()', () => {
