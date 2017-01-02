@@ -35,6 +35,12 @@ describe('Matrix', () => {
                 new M.Matrix([[1, 2, 3], [4, 5, 6]]).transpose();
             }, UNDEFINED_OPERATION);
         });
+        it('.getTrace()', () => {
+            assert.equal(new M.Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).getTrace(), 15);
+            assert.throws(() => {
+                new M.Matrix([[1, 2, 3], [4, 5, 6]]).getTrace();
+            }, UNDEFINED_OPERATION);
+        });
     });
     describe('ZeroMatrix', () => {
         it('.getDeterminant()', () => {

@@ -196,6 +196,14 @@ class Matrix {
     isSquare() {
         return this.matrix.length === this.matrix[0].length;
     }
+    getTrace() {
+        if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
+        let res = 0;
+        for (let i = 0; i < this.row; i++) {
+            res += this.matrix[i][i];
+        }
+        return res;
+    }
     getDeterminant() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
         if (this.row === 1) return this.matrix[0][0];
