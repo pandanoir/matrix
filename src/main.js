@@ -24,12 +24,7 @@ const assertMatrix = matrix => {
     // new Matrix([row1, row2, row2])
     errorCaused = false;
     for (let i = 0, _i = matrix.length; i < _i; i++) {
-        if (matrix[i] instanceof Matrix) {
-            if (matrix[0].column !== matrix[i].column) {
-                errorCaused = true;
-                break;
-            }
-        } else {
+        if (!(matrix[i] instanceof Matrix) || matrix[0].column !== matrix[i].column) {
             errorCaused = true;
             break;
         }
@@ -39,28 +34,20 @@ const assertMatrix = matrix => {
     // new Matrix([[col1, col2, col3]]);
     errorCaused = false;
     if (matrix.length > 1) errorCaused = true;
-    else {
-        for (let j = 0, _j = matrix[0].length; j < _j; j++) {
-            if (matrix[0][j] instanceof Matrix) {
-                if (matrix[0][0].row !== matrix[0][j].row) {
-                    errorCaused = true;
-                    break;
-                }
-            } else {
-                errorCaused = true;
-                break;
-            }
+    const mat0 = matrix[0];
+    for (let j = 0, _j = mat0.length; j < _j && !errorCaused; j++) {
+        if (!(mat0[j] instanceof Matrix) || mat0[0].row !== mat0[j].row) {
+            errorCaused = true;
         }
     }
     if (!errorCaused) return;
     // all elements are Matrix
     for (let i = 0, _i = matrix.length; i < _i; i++) {
-        if (matrix[i][0] instanceof Matrix) {
-            for (let j = 0, _j = matrix[i].length; j < _j; j++) {
-                if (!(matrix[i][j] instanceof Matrix))
-                    throw new Error(INVALID_MATRIX);
-            }
-        } else throw new Error(INVALID_MATRIX);
+        if (!(matrix[i][0] instanceof Matrix)) throw new Error(INVALID_MATRIX);
+        for (let j = 0, _j = matrix[i].length; j < _j; j++) {
+            if (!(matrix[i][j] instanceof Matrix))
+                throw new Error(INVALID_MATRIX);
+        }
     }
     for (let i = 0, _i = matrix.length; i < _i; i++) {
         for (let j = 0, _j = matrix[i].length; j < _j; j++) {
@@ -139,8 +126,8 @@ class Matrix {
     product(matrix) {
         if (this.matrix[0].length !== matrix.matrix.length)
             throw new Error(DIFFERENT_TYPE_PRODUCT);
-        let m = this.matrix[0].length;
-        let _matrix = [];
+        const m = this.matrix[0].length;
+        const _matrix = [];
 
         for (let i = 0, n = this.matrix.length; i < n; i++) {
             _matrix.push([]);
@@ -159,11 +146,8 @@ class Matrix {
     }
     pow(n) {
         if (n === 1) return this;
-        let res = this.product(this).pow(0 | n / 2);
-        if (n % 2 === 1) {
-            res = res.product(this);
-        }
-        return res;
+        if (n % 2 === 1) return this.product(this).pow(0 | n / 2).product(this);
+        return this.product(this).pow(0 | n / 2);
     }
     isSameSize(matrix) {
         assertMatrix(matrix);
@@ -207,9 +191,8 @@ class Matrix {
                 }
                 [res.matrix[i], res.matrix[0]] = [res.matrix[0], res.matrix[i]];
                 return 1 + new Matrix(res.matrix.slice(1).map(row => row.slice(1))).getRank();
-            } else {
-                matrix = new Matrix(matrix.matrix.slice(1));
             }
+            matrix = new Matrix(matrix.matrix.slice(1));
         }
         return rank;
     }
