@@ -27,6 +27,14 @@ describe('Matrix', () => {
                 [1, 1, 1]
             ])));
         });
+        it('.transpose()', () => {
+            assert.ok(new M.Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).transpose().equals(
+            new M.Matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9]])
+            ));
+            assert.throws(() => {
+                new M.Matrix([[1, 2, 3], [4, 5, 6]]).transpose();
+            }, UNDEFINED_OPERATION);
+        });
     });
     describe('ZeroMatrix', () => {
         it('.getDeterminant()', () => {
@@ -40,7 +48,7 @@ describe('Matrix', () => {
                 new M.ZeroMatrix(1, 2).getDeterminant();
             }, UNDEFINED_OPERATION);
             assert.throws(() => {
-                new M.ZeroMatrix(2, 1).getDeterminant()
+                new M.ZeroMatrix(2, 1).getDeterminant();
             }, UNDEFINED_OPERATION);
             assert.throws(() => {
                 new M.ZeroMatrix(3, 2).getDeterminant();

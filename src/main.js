@@ -113,6 +113,18 @@ class Matrix {
         }
         return new Matrix(I);
     }
+    transpose() {
+        const flatten = this.flatten();
+        const matrix = [];
+        if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
+        for (let i = 0; i < flatten.row; i++) {
+            for (let j = 0; j < flatten.column; j++) {
+                if (!matrix[j]) matrix[j] = [];
+                matrix[j][i] = flatten.matrix[i][j];
+            }
+        }
+        return new Matrix(matrix);
+    }
     add(matrix) {
         if (!this.isSameSize(matrix)) throw new Error('given matrix and this matrix are not same size.');
         const _matrix = [];
