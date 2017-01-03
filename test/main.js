@@ -4,13 +4,7 @@ const UNDEFINED_OPERATION = /undefined operation/;
 
 describe('Matrix', () => {
     describe('Matrix', () => {
-        it('constructor', () => {
-            assert.ok(new M.Matrix([[1, 3, 2], [2, 1, 3], [1, 4, 2]]).inverse().equals(
-                new M.Matrix([[-10, 2, 7], [-1, 0, 1], [7, -1, -5]])
-            ));
-            assert.throws(() => {
-                new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).inverse();
-            }, UNDEFINED_OPERATION);
+        it('.flatten()', () => {
             assert.ok(new M.Matrix([
                 new M.RowVector([1, 2, 3]),
                 new M.RowVector([2, 3, 4]),
@@ -29,6 +23,14 @@ describe('Matrix', () => {
                 [1, 1, 1]
             ])));
         });
+        it('.inverse()', () => {
+            assert.ok(new M.Matrix([[1, 3, 2], [2, 1, 3], [1, 4, 2]]).inverse().equals(
+                new M.Matrix([[-10, 2, 7], [-1, 0, 1], [7, -1, -5]])
+            ));
+            assert.throws(() => {
+                new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).inverse();
+            }, UNDEFINED_OPERATION);
+        })
         it('.transpose()', () => {
             assert.ok(new M.Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).transpose().equals(
             new M.Matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9]])
