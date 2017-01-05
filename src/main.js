@@ -30,27 +30,6 @@ const assertMatrix = matrix => {
     if (matrix.length === 0)
         throw new Error(INVALID_MATRIX);
 
-    // all rows are Matrix
-    // new Matrix([row1, row2, row2])
-    let errorCaused = false;
-    for (let i = 0, _i = matrix.length; i < _i; i++) {
-        if (!(matrix[i] instanceof Matrix) || matrix[0].column !== matrix[i].column) {
-            errorCaused = true;
-            break;
-        }
-    }
-    if (!errorCaused) return;
-    // all columns are Matrix
-    // new Matrix([[col1, col2, col3]]);
-    errorCaused = false;
-    if (matrix.length > 1) errorCaused = true;
-    const mat0 = matrix[0];
-    for (let j = 0, _j = mat0.length; j < _j && !errorCaused; j++) {
-        if (!(mat0[j] instanceof Matrix) || mat0[0].row !== mat0[j].row) {
-            errorCaused = true;
-        }
-    }
-    if (!errorCaused) return;
     // all elements are Matrix
     for (let i = 0, _i = matrix.length; i < _i; i++) {
         if (!(matrix[i][0] instanceof Matrix)) throw new Error(INVALID_MATRIX);
@@ -65,11 +44,7 @@ const assertMatrix = matrix => {
 
 class Matrix {
     constructor(matrix) {
-        if (isFlattenMatrix(matrix)) this.isFlatten = true;
-        else {
-            assertMatrix(matrix);
-            this.isFlatten = false;
-        }
+        if (!isFlattenMatrix(matrix)) throw new Error('expected flatten matrix.');
         this.elements = matrix;
         this.rows = matrix;
         this.row = matrix.length;
@@ -77,13 +52,12 @@ class Matrix {
     }
     inverse() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
-        const flatten = this.flatten();
-        const I = new IdentityMatrix(flatten.row).elements;
-        let matrix = new Matrix(flatten.rows.map((row, i) => row.concat(I[i])));
+        const I = new IdentityMatrix(this.row).elements;
+        let matrix = new Matrix(this.rows.map((row, i) => row.concat(I[i])));
 
         const abs = a => a > 0 ? a : -a;
         // Gaussian elimination
-        for (let k = 0; k < flatten.column; k++) {
+        for (let k = 0; k < this.column; k++) {
             const res = matrix.rowReduction(k, k);
             if (res == null) throw new Error(UNDEFINED_OPERATION);
 
@@ -94,22 +68,19 @@ class Matrix {
             matrix.rows[pivot] = matrix.rows[pivot].map(element => element / m);
             [matrix.rows[pivot], matrix.rows[k]] = [matrix.rows[k], matrix.rows[pivot]]; // swap line `pivot` and line `k`
         }
-        const res = new Matrix(matrix.rows.map(row => row.slice(flatten.column)));
-        res.isFlatten = true;
+        const res = new Matrix(matrix.rows.map(row => row.slice(this.column)));
         return res;
     }
     transpose() {
-        const flatten = this.flatten();
         const matrix = [];
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
-        for (let i = 0; i < flatten.row; i++) {
-            for (let j = 0; j < flatten.column; j++) {
+        for (let i = 0; i < this.row; i++) {
+            for (let j = 0; j < this.column; j++) {
                 if (!matrix[j]) matrix[j] = [];
-                matrix[j][i] = flatten.elements[i][j];
+                matrix[j][i] = this.elements[i][j];
             }
         }
         const res = new Matrix(matrix);
-        res.isFlatten = true;
         return res;
     }
     add(matrix) {
@@ -118,11 +89,10 @@ class Matrix {
         for (let i = 0, _i = this.row; i < _i; i++) {
             _matrix.push([]);
             for (let j = 0, _j = this.rows[i].length; j < _j; j++) {
-                _matrix[i][j] = add(this.elements[i][j], matrix.elements[i][j]);
+                _matrix[i][j] = this.elements[i][j] + matrix.elements[i][j];
             }
         }
         const res = new Matrix(_matrix);
-        res.isFlatten = !!this.isFlatten;
         return res;
     }
     substract(matrix) {
@@ -133,35 +103,27 @@ class Matrix {
         for (let i = 0, _i = this.row; i < _i; i++) {
             _matrix.push([]);
             for (let j = 0, _j = this.rows[i].length; j < _j; j++) {
-                if (this.elements[i][j] instanceof Matrix) {
-                    _matrix[i][j] = this.elements[i][j].multiple(k);
-                } else {
-                    _matrix[i][j] = this.elements[i][j] * k;
-                }
+                _matrix[i][j] = this.elements[i][j] * k;
             }
         }
         const res = new Matrix(_matrix);
-        res.isFlatten = !!this.isFlatten;
         return res;
     }
     product(matrix) {
-        const flatten = this.flatten();
-        matrix = matrix.flatten();
-        if (flatten.column !== matrix.row)
+        if (this.column !== matrix.row)
             throw new Error(DIFFERENT_TYPE_PRODUCT);
         const _res = [];
 
-        for (let i = 0; i < flatten.row; i++) {
+        for (let i = 0; i < this.row; i++) {
             _res.push([]);
             for (let j = 0; j < matrix.column; j++) {
                 _res[i][j] = 0;
-                for (let k = 0; k < flatten.column; k++) {
-                    _res[i][j] += flatten.elements[i][k] * matrix.elements[k][j];
+                for (let k = 0; k < this.column; k++) {
+                    _res[i][j] += this.elements[i][k] * matrix.elements[k][j];
                 }
             }
         }
         const res = new Matrix(_res);
-        res.isFlatten = !!this.isFlatten;
         return res;
     }
     pow(n) {
@@ -181,8 +143,7 @@ class Matrix {
         return true;
     }
     isSquare() {
-        const flatten = this.flatten();
-        return flatten.row === flatten.column;
+        return this.row === this.column;
     }
     getTrace() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
@@ -193,7 +154,7 @@ class Matrix {
         return res;
     }
     getRank() {
-        let matrix = this.flatten();
+        let matrix = this;
         if (matrix.row === 1) return matrix.rows[0].some(element => element !== 0) ? 1 : 0;
         while (matrix.row > 0) {
             let found = false;
@@ -218,12 +179,11 @@ class Matrix {
     }
     getDeterminant() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
-        const flatten = this.flatten();
-        if (flatten.row === 1) return flatten.elements[0][0];
-        if (flatten.row === 2) {
-            return flatten.elements[0][0] * flatten.elements[1][1] - flatten.elements[0][1] * flatten.elements[1][0];
+        if (this.row === 1) return this.elements[0][0];
+        if (this.row === 2) {
+            return this.elements[0][0] * this.elements[1][1] - this.elements[0][1] * this.elements[1][0];
         }
-        const res = flatten.rowReduction(0);
+        const res = this.rowReduction(0);
         if (res == null) return 0;
         let i = 0;
         for (; i < res.row; i++) {
@@ -234,40 +194,7 @@ class Matrix {
         return m * res.rows.slice(1).map(row => row.slice(1)).getDeterminant();
     }
     flatten() {
-        const matrix = [];
-        if (this.isFlatten) return this;
-        for (let i = 0, rowLen = 0; i < this.row; i++) {
-            if (this.rows[i] instanceof Matrix) {
-                const flattenMatrix = this.rows[i].flatten();
-                for (let j = 0; j < flattenMatrix.row; j++) {
-                    matrix[rowLen + j] = flattenMatrix.rows[j];
-                }
-                rowLen += flattenMatrix.row;
-                continue;
-            }
-            let deltaRow = 1;
-            for (let j = 0, columnLen = 0; j < this.column; j++) {
-                if (this.elements[i][j] instanceof Matrix) {
-                    const flattenMatrix = this.elements[i][j].flatten();
-                    flattenMatrix.rows.forEach((row, i) =>
-                        row.forEach((element, j) => {
-                            if (!matrix[rowLen + i]) matrix[rowLen + i] = [];
-                            matrix[rowLen + i][columnLen + j] = element;
-                        })
-                    );
-                    deltaRow = flattenMatrix.row;
-                    columnLen += flattenMatrix.column;
-                    continue;
-                }
-                if (!matrix[rowLen]) matrix[rowLen] = [];
-                matrix[rowLen][columnLen] = this.elements[i][j];
-                columnLen++;
-            }
-            rowLen += deltaRow;
-        }
-        const res = new Matrix(matrix);
-        res.isFlatten = true;
-        return res;
+        return this;
     }
     equals(m) {
         const A = this, B = m;
@@ -280,7 +207,7 @@ class Matrix {
         return true;
     }
     rowReduction(k, start = 0) {
-        const matrix = this.flatten().rows.map(row => row.concat());
+        const matrix = this.rows.map(row => row.concat());
         const abs = a => a > 0 ? a : -a;
         // Gaussian elimination
         let next_i = -1;
@@ -318,7 +245,6 @@ class Matrix {
 class ZeroMatrix extends Matrix {
     constructor(n, m) {
         super([...Array(n)].map(() => Array(m).fill(0)));
-        this.isFlatten = true;
     }
     getDeterminant() {
         if (this.row === this.column) return 0;
@@ -328,7 +254,6 @@ class ZeroMatrix extends Matrix {
 class IdentityMatrix extends Matrix {
     constructor(n) {
         super([...Array(n)].map((row, i) => (row = Array(n).fill(0), row[i] = 1, row)));
-        this.isFlatten = true;
     }
     inverse() {
         return this;
@@ -337,20 +262,131 @@ class IdentityMatrix extends Matrix {
         return 1;
     }
 }
+class BlockMatrix extends Matrix {
+    constructor(matrix) {
+        assertMatrix(matrix);
+        super([[]]);
+        this.elements = matrix;
+        this.rows = matrix;
+        this.row = matrix.length;
+        this.column = matrix[0].length;
+        this.__flatten__ = null;
+    }
+    flatten() {
+        if (this.__flatten__ !== null) return this.__flatten__;
+        const matrix = [];
+        for (let i = 0, rowLen = 0, deltaRow = 1; i < this.row; i++) {
+            deltaRow = 1;
+            for (let j = 0, columnLen = 0; j < this.column; j++) {
+                const flattenMatrix = this.elements[i][j];
+                for (let i = 0; i < flattenMatrix.row; i++) {
+                    for (let j = 0; j < flattenMatrix.column; j++) {
+                        if (!matrix[rowLen + i]) matrix[rowLen + i] = [];
+                        matrix[rowLen + i][columnLen + j] = flattenMatrix.elements[i][j];
+                    }
+                }
+                deltaRow = flattenMatrix.row;
+                columnLen += flattenMatrix.column;
+            }
+            rowLen += deltaRow;
+        }
+        const res = new Matrix(matrix);
+        return this.__flatten__ = res;
+    }
+    inverse() {
+        return this.flatten().inverse();
+    }
+    transpose() {
+        return this.flatten().transpose();
+    }
+    add(blockMatrix) {
+        if (!this.isSameSize(blockMatrix)) throw new Error('given matrix and this matrix are not same size.');
+        if (!this.hasSameBlock(blockMatrix)) {
+            return this.flatten().add(blockMatrix.flatten());
+        }
+        const _matrix = [];
+        for (let i = 0, _i = this.row; i < _i; i++) {
+            _matrix.push([]);
+            for (let j = 0, _j = this.rows[i].length; j < _j; j++) {
+                _matrix[i][j] = this.elements[i][j].add(blockMatrix.elements[i][j]);
+            }
+        }
+        const res = new BlockMatrix(_matrix);
+        return res;
+    }
+    substract(blockMatrix) {
+        return this.add(blockMatrix.multiple(-1));
+    }
+    multiple(k) {
+        const _matrix = [];
+        for (let i = 0, _i = this.row; i < _i; i++) {
+            _matrix.push([]);
+            for (let j = 0, _j = this.rows[i].length; j < _j; j++) {
+                _matrix[i][j] = this.elements[i][j].multiple(k);
+            }
+        }
+        const res = new BlockMatrix(_matrix);
+        return res;
+    }
+    product(matrix) {
+        return this.flatten().product(matrix.flatten());
+    }
+    pow(n) {
+        return this.flatten().pow(n);
+    }
+    isSameSize(matrix) {
+        return this.flatten().isSameSize(matrix.flatten());
+    }
+    isSquare() {
+        return this.flatten().isSquare();
+    }
+    hasSameBlock(blockMatrix) {
+        if (!(blockMatrix instanceof BlockMatrix)) throw new Error(EXPECTED_BLOCK_MATRIX);
+        if (!this.isSameSize(blockMatrix)) return false;
+        if (this.row !== blockMatrix.row || this.column !== blockMatrix.column) return false;
+        for (let i = 0; i < this.row; i++) {
+            for (let j = 0; j < this.column; j++) {
+                if (!this.elements[i][j].isSameSize(blockMatrix.elements[i][j])) return false;
+            }
+        }
+        return true;
+    }
+    getTrace() {
+        return this.flatten().getTrace();
+    }
+    getRank() {
+        return this.flatten().getRank();
+    }
+    getDeterminant() {
+        return this.flatten().getDeterminant();
+    }
+    equals(m) {
+        const A = this, B = m;
+        if (A.row !== B.row || A.column !== B.column) return false;
+        for (let i = 0; i < A.row; i++) {
+            for (let j = 0; j < A.column; j++) {
+                if (!A.elements[i][j].equals(B.elements[i][j])) return false;
+            }
+        }
+        return true;
+    }
+    rowReduction(k, start = 0) {
+        return this.flatten().rowReduction(k, start);
+    }
+};
 class RowVector extends Matrix {
     constructor(xs) {
         super([xs]);
-        this.isFlatten = true;
     }
 }
 class ColumnVector extends Matrix {
     constructor(xs) {
         super(xs.map(x => [x]));
-        this.isFlatten = true;
     }
 }
 export default {
     Matrix,
+    BlockMatrix,
     ZeroMatrix,
     IdentityMatrix,
     RowVector,
