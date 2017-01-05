@@ -1,7 +1,7 @@
 'use strict';
-import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX, UNDEFINED_OPERATION} from './errorMessages.js';
+import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX, UNDEFINED_OPERATION, EXPECTED_BLOCK_MATRIX} from './errorMessages.js';
 const isFlattenMatrix = matrix => {
-    if (!(Array.isArray(matrix) || matrix instanceof Matrix))
+    if (!Array.isArray(matrix))
         throw new Error(INVALID_MATRIX);
     if (matrix.length === 0)
         throw new Error(INVALID_MATRIX);
@@ -24,7 +24,7 @@ const isFlattenMatrix = matrix => {
     return !errorCaused;
 }
 const assertMatrix = matrix => {
-    if (!(Array.isArray(matrix) || matrix instanceof Matrix))
+    if (!Array.isArray(matrix))
         throw new Error(INVALID_MATRIX);
     if (matrix.length === 0)
         throw new Error(INVALID_MATRIX);
@@ -131,7 +131,6 @@ class Matrix {
         return this.product(this).pow(0 | n / 2);
     }
     isSameSize(matrix) {
-        assertMatrix(matrix);
         for (let i = 0, _i = this.row; i < _i; i++) {
             if (this.rows[i] instanceof Matrix) {
                 if (!this.rows[i].isSameSize(matrix.rows[i])) return false;
