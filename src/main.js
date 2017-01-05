@@ -1,6 +1,5 @@
 'use strict';
 import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX, UNDEFINED_OPERATION} from './errorMessages.js';
-import {add, product} from './utils.js';
 const isFlattenMatrix = matrix => {
     if (!(Array.isArray(matrix) || matrix instanceof Matrix))
         throw new Error(INVALID_MATRIX);
