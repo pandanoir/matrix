@@ -31,6 +31,12 @@ describe('Matrix', () => {
             assert.equal(new M.Matrix([[1, 1, -3], [-1, 0, 5], [0, 3, 6]]).getRank(), 2);
             assert.equal(new M.Matrix([[2, 3, -4, 1], [1, 2, -3, -1], [-2, -4, 9, 5]]).getRank(), 3);
         });
+        it('.split()', () => {
+            assert.ok(new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).split([2], [2]).equals(new M.BlockMatrix([
+                [new M.Matrix([[1, 2], [2, 3]]), new M.ColumnVector([3, 4])],
+                [new M.RowVector([1, 1]), new M.Matrix([[1]])]
+            ])));
+        })
     });
     describe('BlockMatrix', () => {
         const A = new M.BlockMatrix([

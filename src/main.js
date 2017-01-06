@@ -194,6 +194,26 @@ class Matrix {
     flatten() {
         return this;
     }
+    split(m, n) {
+        // m and n are the lists of points where the matrix is split.
+        // m splits row.
+        // n splits column.
+        // m == [1] then [[1, 2, 3]] will [[[1], [2, 3]]]
+        const uniq = (res, x) => res[res.length - 1] === x ? res : res.concat(x);
+        const row = this.row;
+        const column = this.column;
+        m = [0, row].concat(m).map(x => row >= x ? x >= 0 ? x : 0 : row).sort().reduce(uniq, []);
+        n = [0, column].concat(n).map(x => column >= x ? x >= 0 ? x : 0 : column).sort().reduce(uniq, []);
+        const res = [];
+        for (let i = 1, _i = m.length; i < _i; i++) {
+            res.push([]);
+            for (let j = 1, _j = n.length; j < _j; j++) {
+                const rows = this.rows.slice(m[i - 1], m[i]);
+                res[i - 1][j - 1] = new Matrix(rows.map(row => row.slice(n[j - 1], n[j])));
+            }
+        }
+        return new BlockMatrix(res);
+    }
     equals(m) {
         const A = this, B = m;
         if (A.row !== B.row || A.column !== B.column) return false;
