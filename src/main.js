@@ -260,16 +260,6 @@ class Matrix {
         });
     }
 }
-Matrix.fromFunction = (f, row, column) => {
-    const res = [];
-    for (let i = 0; i < row; i++) {
-        res[i] = [];
-        for (let j = 0; j < column; j++) {
-            res[i][j] = f(i, j);
-        }
-    }
-    return new Matrix(res);
-}
 class ZeroMatrix extends Matrix {
     constructor(n, m) {
         super([...Array(n)].map(() => Array(m).fill(0)));
@@ -412,11 +402,22 @@ class ColumnVector extends Matrix {
         super(xs.map(x => [x]));
     }
 }
+const fromFunction = (f, row, column) => {
+    const res = [];
+    for (let i = 0; i < row; i++) {
+        res[i] = [];
+        for (let j = 0; j < column; j++) {
+            res[i][j] = f(i, j);
+        }
+    }
+    return new Matrix(res);
+}
 export default {
     Matrix,
     BlockMatrix,
     ZeroMatrix,
     IdentityMatrix,
     RowVector,
-    ColumnVector
+    ColumnVector,
+    fromFunction
 }
