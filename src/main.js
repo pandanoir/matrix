@@ -1,5 +1,6 @@
 'use strict';
 import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX, UNDEFINED_OPERATION, EXPECTED_BLOCK_MATRIX} from './errorMessages.js';
+import {bairstowsMethod} from './algorithm.js';
 const isFlattenMatrix = matrix => {
     if (!Array.isArray(matrix))
         throw new Error(INVALID_MATRIX);
@@ -142,6 +143,19 @@ class Matrix {
     }
     isSquare() {
         return this.row === this.column;
+    }
+    getEigenvalue() {
+        if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
+        const n = this.row;
+        const b = [-this.getTrace()];
+        const I = new IdentityMatrix(this.row);
+        let H = I;
+        for (let k = 1; k < n; k++) {
+            H = this.product(H).add(I.multiple(b[k - 1]));
+            b[k] = -this.product(H).getTrace() / (k + 1);
+        }
+        console.log(b);
+        return bairstowsMethod(1, ...b);
     }
     getTrace() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);

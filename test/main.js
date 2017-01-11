@@ -38,6 +38,9 @@ describe('Matrix', () => {
                 new M.Matrix([[1, 2, 3], [4, 5, 6]]).transpose();
             }, UNDEFINED_OPERATION);
         });
+        it('.getEigenvalue()', () => {
+            console.log(new M.Matrix([[3, 4, -5, 3], [0, 1, 8, 0], [0, 0, 2, -1], [0, 0, 0, 1]]).getEigenvalue());
+        });
         it('.getTrace()', () => {
             assert.equal(new M.Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).getTrace(), 15);
             assert.throws(() => {
