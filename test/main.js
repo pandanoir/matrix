@@ -31,11 +31,35 @@ describe('Matrix', () => {
             assert.equal(new M.Matrix([[1, 1, -3], [-1, 0, 5], [0, 3, 6]]).getRank(), 2);
             assert.equal(new M.Matrix([[2, 3, -4, 1], [1, 2, -3, -1], [-2, -4, 9, 5]]).getRank(), 3);
         });
+        it('.product', () => {
+            const A = new M.Matrix([[5, 6], [7, 8]]);
+            const B = new M.Matrix([[1, 2], [3, 4]]);
+            const res = new M.Matrix([[23, 34], [31, 46]]);
+            assert.ok(A.product(B).equals(res));
+        });
         it('.split()', () => {
             assert.ok(new M.Matrix([[1, 2, 3], [2, 3, 4], [1, 1, 1]]).split([2], [2]).equals(new M.BlockMatrix([
                 [new M.Matrix([[1, 2], [2, 3]]), new M.ColumnVector([3, 4])],
                 [new M.RowVector([1, 1]), new M.Matrix([[1]])]
             ])));
+        });
+        it('Matrix.fromFunction', () => {
+            const kroneckerDelta = (i, j) => i === j ? 1 : 0;
+            assert.ok(M.Matrix.fromFunction(kroneckerDelta, 9, 9).equals(new M.IdentityMatrix(9)));
+            assert.ok(M.Matrix.fromFunction((i, j) => 0, 9, 9).equals(new M.ZeroMatrix(9, 9)));
+            const matrix = new M.Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+            assert.ok(M.Matrix.fromFunction((i, j) => matrix.elements[j][i], 3, 3).equals(
+            new M.Matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9]])));
+
+            const A = new M.Matrix([[5, 6], [7, 8]]);
+            const B = new M.Matrix([[1, 2], [3, 4]]);
+            const res = new M.Matrix([[23, 34], [31, 46]]);
+            const m = A.row;
+            assert.ok(M.Matrix.fromFunction((i, j) => {
+                let res = 0;
+                for (let k = 0; k < m; k++) res += A.elements[i][k] * B.elements[k][j];
+                return res;
+            }, B.row, A.column).equals(res));
         })
     });
     describe('BlockMatrix', () => {
