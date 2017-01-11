@@ -154,7 +154,6 @@ class Matrix {
             H = this.product(H).add(I.multiple(b[k - 1]));
             b[k] = -this.product(H).getTrace() / (k + 1);
         }
-        console.log(b);
         return bairstowsMethod(1, ...b);
     }
     getTrace() {
