@@ -3,6 +3,7 @@ export const bairstowsMethod = (...a) => {
     if (n == 1) return [-a[1] / a[0]];
     if (n == 2) {
         const D = a[1] * a[1] - 4 * a[0] * a[2];
+        if (D < 0) return [];
         if (D == 0) return [-a[1] / 2];
         return [(-a[1] + Math.sqrt(D)) / (2 * a[0]), (-a[1] - Math.sqrt(D)) / (2 * a[0])];
     }
