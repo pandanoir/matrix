@@ -193,8 +193,14 @@ class Matrix {
         const uniq = (res, x) => res[res.length - 1] === x ? res : res.concat(x);
         const row = this.row;
         const column = this.column;
-        m = [0, row].concat(m).map(x => row >= x ? x >= 0 ? x : 0 : row).sort().reduce(uniq, []);
-        n = [0, column].concat(n).map(x => column >= x ? x >= 0 ? x : 0 : column).sort().reduce(uniq, []);
+        m = [0, row].concat(m)
+            .map(x => Math.max(Math.min(row, x), 0))
+            .sort()
+            .reduce(uniq, []);
+        n = [0, column].concat(n)
+            .map(x => Math.max(Math.min(column, x), 0))
+            .sort()
+            .reduce(uniq, []);
         const res = [];
         for (let i = 1, _i = m.length; i < _i; i++) {
             res.push([]);
