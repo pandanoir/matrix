@@ -1,6 +1,16 @@
 'use strict';
 import {DIFFERENT_TYPE_PRODUCT, INVALID_MATRIX, UNDEFINED_OPERATION, EXPECTED_BLOCK_MATRIX} from './errorMessages.js';
 import {bairstowsMethod} from './algorithm.js';
+const fromFunction = (f, row, column) => {
+    const res = [];
+    for (let i = 0; i < row; i++) {
+        res[i] = [];
+        for (let j = 0; j < column; j++) {
+            res[i][j] = f(i, j);
+        }
+    }
+    return new Matrix(res);
+};
 const isFlattenMatrix = matrix => {
     if (!Array.isArray(matrix))
         throw new Error(INVALID_MATRIX);
@@ -23,7 +33,7 @@ const isFlattenMatrix = matrix => {
         }
     }
     return !errorCaused;
-}
+};
 const assertMatrix = matrix => {
     if (!Array.isArray(matrix))
         throw new Error(INVALID_MATRIX);
@@ -72,59 +82,27 @@ class Matrix {
         return res;
     }
     transpose() {
-        const matrix = [];
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
-        for (let i = 0; i < this.row; i++) {
-            for (let j = 0; j < this.column; j++) {
-                if (!matrix[j]) matrix[j] = [];
-                matrix[j][i] = this.elements[i][j];
-            }
-        }
-        const res = new Matrix(matrix);
-        return res;
+        return fromFunction((i, j) => this.elements[j][i], this.column, this.row);
     }
     add(matrix) {
         if (!this.isSameSize(matrix)) throw new Error('given matrix and this matrix are not same size.');
-        const _matrix = [];
-        for (let i = 0, _i = this.row; i < _i; i++) {
-            _matrix.push([]);
-            for (let j = 0, _j = this.rows[i].length; j < _j; j++) {
-                _matrix[i][j] = this.elements[i][j] + matrix.elements[i][j];
-            }
-        }
-        const res = new Matrix(_matrix);
-        return res;
+        return fromFunction((i, j) => this.elements[i][j] + matrix.elements[i][j], this.row, this.column);
     }
     substract(matrix) {
         return this.add(matrix.multiple(-1));
     }
     multiple(k) {
-        const _matrix = [];
-        for (let i = 0, _i = this.row; i < _i; i++) {
-            _matrix.push([]);
-            for (let j = 0, _j = this.rows[i].length; j < _j; j++) {
-                _matrix[i][j] = this.elements[i][j] * k;
-            }
-        }
-        const res = new Matrix(_matrix);
-        return res;
+        return fromFunction((i, j) => this.elements[i][j] * k, this.row, this.column);
     }
     product(matrix) {
         if (this.column !== matrix.row)
             throw new Error(DIFFERENT_TYPE_PRODUCT);
-        const _res = [];
-
-        for (let i = 0; i < this.row; i++) {
-            _res.push([]);
-            for (let j = 0; j < matrix.column; j++) {
-                _res[i][j] = 0;
-                for (let k = 0; k < this.column; k++) {
-                    _res[i][j] += this.elements[i][k] * matrix.elements[k][j];
-                }
-            }
-        }
-        const res = new Matrix(_res);
-        return res;
+        return fromFunction((i, j) => {
+            let res = 0;
+            for (let k = 0; k < this.row; k++) res += this.elements[i][k] * matrix.elements[k][j];
+            return res;
+        }, matrix.row, this.column);
     }
     pow(n) {
         if (n === 1) return this;
@@ -414,16 +392,6 @@ class ColumnVector extends Matrix {
     constructor(xs) {
         super(xs.map(x => [x]));
     }
-}
-const fromFunction = (f, row, column) => {
-    const res = [];
-    for (let i = 0; i < row; i++) {
-        res[i] = [];
-        for (let j = 0; j < column; j++) {
-            res[i][j] = f(i, j);
-        }
-    }
-    return new Matrix(res);
 }
 export default {
     Matrix,
