@@ -203,7 +203,7 @@ class Matrix {
                 res[i - 1][j - 1] = new Matrix(rows.map(row => row.slice(n[j - 1], n[j])));
             }
         }
-        return new BlockMatrix(res);
+        return new BlockMatrix(res, m, n);
     }
     equals(m) {
         const A = this, B = m;
@@ -275,13 +275,15 @@ class IdentityMatrix extends Matrix {
     }
 }
 class BlockMatrix extends Matrix {
-    constructor(matrix) {
+    constructor(matrix, m = [], n = []) {
         assertMatrix(matrix);
         super([[]]);
         this.elements = matrix;
         this.rows = matrix;
         this.row = matrix.length;
         this.column = matrix[0].length;
+        this.m = m;
+        this.n = n;
         this.__flatten__ = null;
     }
     flatten() {
