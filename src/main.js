@@ -148,21 +148,19 @@ class Matrix {
         while (matrix.row > 0) {
             let found = false;
             for (let i = 0; i < matrix.row; i++) {
-                if (matrix.elements[i][0] !== 0) {
-                    found = true;
-                    break;
-                }
+                if (matrix.elements[i][0] === 0) continue;
+                found = true;
+                break;
             }
-            if (found) {
-                const res = matrix.rowReduction(0);
-                let i = 0;
-                for (; i < res.row; i++) {
-                    if (res.rows[i][0] !== 0) break;
-                }
-                [res.rows[i], res.rows[0]] = [res.rows[0], res.rows[i]];
-                return 1 + new Matrix(res.rows.slice(1).map(row => row.slice(1))).getRank();
+            if (!found) {
+                matrix = new Matrix(matrix.rows.slice(1));
+                continue;
             }
-            matrix = new Matrix(matrix.rows.slice(1));
+            const res = matrix.rowReduction(0);
+            let i = 0;
+            for (; res.rows[i][0] === 0 && i < res.row; i++) ;
+            [res.rows[i], res.rows[0]] = [res.rows[0], res.rows[i]];
+            return 1 + new Matrix(res.rows.slice(1).map(row => row.slice(1))).getRank();
         }
         return rank;
     }
@@ -227,9 +225,7 @@ class Matrix {
         // Gaussian elimination
         let next_i = -1;
         for (let i = start, _i = matrix.length, min = Math.Infinity; i < _i; i++) {
-            if (matrix[i][k] === 0) {
-                continue;
-            }
+            if (matrix[i][k] === 0) continue;
             if (abs(matrix[i][k]) === 1) {
                 next_i = i;
                 break;
