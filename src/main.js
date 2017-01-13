@@ -267,6 +267,9 @@ class IdentityMatrix extends Matrix {
     inverse() {
         return this;
     }
+    getEigenvalue() {
+        return [1];
+    }
     getDeterminant() {
         return 1;
     }
@@ -359,6 +362,9 @@ class BlockMatrix extends Matrix {
             }
         }
         return true;
+    }
+    getEigenvalue() {
+        return this.flatten().getEigenvalue();
     }
     getTrace() {
         return this.flatten().getTrace();
