@@ -12,9 +12,7 @@ const fromFunction = (f, row, column) => {
     return new Matrix(res);
 };
 const isFlattenMatrix = matrix => {
-    if (!Array.isArray(matrix))
-        throw new Error(INVALID_MATRIX);
-    if (matrix.length === 0)
+    if (!Array.isArray(matrix) || matrix.length === 0)
         throw new Error(INVALID_MATRIX);
 
     // all elements are not Matrix.
@@ -35,19 +33,17 @@ const isFlattenMatrix = matrix => {
     return !errorCaused;
 };
 const assertMatrix = matrix => {
-    if (!Array.isArray(matrix))
-        throw new Error(INVALID_MATRIX);
-    if (matrix.length === 0)
+    if (!Array.isArray(matrix) || matrix.length === 0)
         throw new Error(INVALID_MATRIX);
 
     // all elements are Matrix
     for (let i = 0, _i = matrix.length; i < _i; i++) {
         if (!(matrix[i][0] instanceof Matrix)) throw new Error(INVALID_MATRIX);
         for (let j = 0, _j = matrix[i].length; j < _j; j++) {
-            if (!(matrix[i][j] instanceof Matrix))
+            if (!(matrix[i][j] instanceof Matrix) ||
+                matrix[0][j].column !== matrix[i][j].column ||
+                matrix[i][0].row !== matrix[i][j].row)
                 throw new Error(INVALID_MATRIX);
-            if (matrix[0][j].column !== matrix[i][j].column) throw new Error(INVALID_MATRIX);
-            if (matrix[i][0].row !== matrix[i][j].row) throw new Error(INVALID_MATRIX);
         }
     }
 };
@@ -62,8 +58,8 @@ class Matrix {
     }
     inverse() {
         if (!this.isSquare()) throw new Error(UNDEFINED_OPERATION);
-        const I = new IdentityMatrix(this.row).elements;
-        let matrix = new Matrix(this.rows.map((row, i) => row.concat(I[i])));
+        const I = new IdentityMatrix(this.row);
+        let matrix = new Matrix(this.rows.map((row, i) => row.concat(I.rows[i])));
 
         const abs = a => a > 0 ? a : -a;
         // Gaussian elimination
@@ -73,7 +69,7 @@ class Matrix {
 
             matrix = res;
             let pivot = 0;
-            for (;pivot < res.row; pivot++) if (res.rows[pivot][k] !== 0) break;
+            for (; res.rows[pivot][k] === 0; pivot++) ;
             const m = matrix.elements[pivot][k];
             matrix.rows[pivot] = matrix.rows[pivot].map(element => element / m);
             [matrix.rows[pivot], matrix.rows[k]] = [matrix.rows[k], matrix.rows[pivot]]; // swap line `pivot` and line `k`
@@ -158,7 +154,7 @@ class Matrix {
             }
             const res = matrix.rowReduction(0);
             let i = 0;
-            for (; res.rows[i][0] === 0 && i < res.row; i++) ;
+            for (; res.rows[i][0] === 0; i++) ;
             [res.rows[i], res.rows[0]] = [res.rows[0], res.rows[i]];
             return 1 + new Matrix(res.rows.slice(1).map(row => row.slice(1))).getRank();
         }
@@ -173,9 +169,7 @@ class Matrix {
         const res = this.rowReduction(0);
         if (res == null) return 0;
         let i = 0;
-        for (; i < res.row; i++) {
-            if (res.elements[i][0] !== 0) break;
-        }
+        for (; res.elements[i][0] === 0; i++) ;
         [res.rows[i], res.rows[0]] = [res.rows[0], res.rows[i]];
         const m = res.elements[0][0];
         return m * res.rows.slice(1).map(row => row.slice(1)).getDeterminant();
