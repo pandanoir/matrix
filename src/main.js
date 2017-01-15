@@ -241,10 +241,7 @@ class Matrix {
         return new Matrix(matrix);
     }
     toArray() {
-        return this.rows.map(row => {
-            if (row instanceof Matrix) return row.toArray();
-            return row.map(element => element instanceof Matrix ? element.toArray() : element);
-        });
+        return this.elements;
     }
 }
 class ZeroMatrix extends Matrix {
@@ -385,6 +382,9 @@ class BlockMatrix extends Matrix {
     }
     rowReduction(k, start = 0) {
         return this.flatten().rowReduction(k, start);
+    }
+    toArray() {
+        return this.flatten().elements;
     }
 };
 class RowVector extends Matrix {
